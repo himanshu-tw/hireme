@@ -11,3 +11,74 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+    id                 String   @id @default(uuid())
+    email              String   @unique
+    password           String?
+    role               Role
+    createdAt          DateTime @default(now())
+    companyProfile     CompanyProfile?
+    developerProfile   DeveloperProfile?
+}
+
+enum Role {
+    COMPANY
+    DEVELOPER
+}
+
+model CompanyProfile {
+    id           String    @id @default(uuid())
+    userId       String    @unique
+    name         String
+    website      String
+    description  String
+    location     String
+    user         User      @relation(fields: [userId], references: [id])
+    jobs         Job[]
+}
+
+model DeveloperProfile {
+   id         String    @id @default(uuid())
+   userId     String    @unique
+   name       String
+   bio        String
+   skills     String[]
+   resumeUrl  String
+   user       User      @relation(fields: [userId], references: [id])
+   application Application[]
+}
+
+model Job {
+    id           String         @id @default(uuid())
+    companyId    String
+    title        String
+    description  String
+    skills       String[]
+    location     String
+    salary       Int
+    status       JobStatus
+    company      CompanyProfile  @relation(fields: [companyId], references: [id])
+    application  Application[]
+}
+
+enum JobStatus {
+    OPEN
+    CLOSED
+}
+
+model Application {
+    id            String                 @id                  @default(uuid())
+    jobId         String
+    developerId   String
+    status        ApplicationStatus
+    createdAt     DateTime               @default(now())
+    developer     DeveloperProfile       @relation(fields: [developerId], references: [userId])
+    jobs          Job                    @relation(fields: [jobId], references: [id])
+}
+
+enum ApplicationStatus {
+    APPLIED
+    SEEN
+    REJECTED
+}
