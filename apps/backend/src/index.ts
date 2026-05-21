@@ -9,14 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// port
+const PORT = process.env.PORT || 5000;
 
-app.get('/health', (req: any, res: any) => {
-  res.json({ status: 'ok' });
-});
 
+// routers
 app.use('/api/auth', authRouter)
 
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
