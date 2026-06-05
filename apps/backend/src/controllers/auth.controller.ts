@@ -23,7 +23,7 @@ export const register = async (req: Request, res: Response) => {
       role,
     }).returning()
 
-    const token = generateToken(newUser!.id)
+    const token = generateToken(newUser!.id, newUser!.role)
 
     res.json({ token })
 
