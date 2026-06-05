@@ -125,3 +125,29 @@ export const applyToJob = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ message: 'Server error' })
   }
 }
+
+export const getMyApplications = async (req: AuthRequest, res: Response) => {
+  try {
+    const id = req.user?.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "id not found" })
+    }
+
+    // Check if developer profile exists
+    const profile = await db.select().from(developerProfiles).where(eq(developerProfiles.userId, id));
+
+    if (profile.length === 0) {
+      return res.status(404).json({ message: "Developer profile not found" })
+    }
+    
+    const devProfile = profile[0]!;
+
+    const myApplications = await db.select().from(applications).where(eq(applications.developerId, devProfile.id));
+
+    return res.json({ applications: myApplications });
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Server error' })
+  }
+}
