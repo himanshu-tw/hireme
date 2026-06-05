@@ -49,7 +49,7 @@ export const signIn = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid email or password' })
     }
 
-    const token = generateToken(user.id)
+    const token = generateToken(user.id, user.role)
 
     res.json({ token })
 
