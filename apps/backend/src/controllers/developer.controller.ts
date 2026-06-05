@@ -2,7 +2,7 @@ import { db } from "../db";
 import { eq } from 'drizzle-orm'
 import { Request, Response } from 'express'
 
-import { developerProfiles, jobs } from "../db/schema";
+import { developerProfiles, jobs, applications } from "../db/schema";
 import { AuthRequest } from "../middleware/middleware";
 
 export const getDevProfile = async (req: AuthRequest, res: Response) => {
@@ -66,6 +66,60 @@ export const getOpenJobs = async (req: AuthRequest, res: Response) => {
     const openJobs = await db.select().from(jobs).where(eq(jobs.status, "OPEN"));
 
     return res.json({ jobs: openJobs });
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const applyToJob = async (req: AuthRequest, res: Response) => {
+  try {
+    const { jobId } = req.body;
+
+    if (!jobId) {
+      return res.status(400).json({ message: "jobId is required" })
+    }
+
+    const id = req.user?.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "id not found" })
+    }
+
+    // Check if job exists and is open
+    const jobExists = await db.select().from(jobs).where(eq(jobs.id, jobId));
+    const job = jobExists.filter(j => j.status === "OPEN");
+
+    if (job.length === 0) {
+      return res.status(404).json({ message: "Job not found or not open" })
+    }
+
+    // Check if developer profile exists
+    const profile = await db.select().from(developerProfiles).where(eq(developerProfiles.userId, id));
+
+    if (profile.length === 0) {
+      return res.status(404).json({ message: "Developer profile not found" })
+    }
+    
+    const devProfile = profile[0]!;
+
+    // Check if already applied
+    const existingApplication = await db.select().from(applications).where(eq(applications.jobId, jobId));
+    const alreadyApplied = existingApplication.filter(app => app.developerId === devProfile.id);
+
+    if (alreadyApplied.length > 0) {
+      return res.status(400).json({ message: "Already applied to this job" })
+    }
+
+
+    // Create application
+    await db.insert(applications).values({
+      jobId,
+      developerId: devProfile.id,
+      status: "APPLIED"
+    });
+
+    return res.json({ message: "Application submitted" });
   } catch (err) {
     console.error(err)
     return res.status(500).json({ message: 'Server error' })
