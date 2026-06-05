@@ -2,7 +2,7 @@ import { db } from "../db";
 import { eq } from 'drizzle-orm'
 import { Request, Response } from 'express'
 
-import { developerProfiles } from "../db/schema";
+import { developerProfiles, jobs } from "../db/schema";
 import { AuthRequest } from "../middleware/middleware";
 
 export const getDevProfile = async (req: AuthRequest, res: Response) => {
@@ -55,6 +55,17 @@ export const createDevProfile = async (req: AuthRequest, res: Response) => {
       }).returning();
 
       return res.json({ profile });
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const getOpenJobs = async (req: AuthRequest, res: Response) => {
+  try {
+    const openJobs = await db.select().from(jobs).where(eq(jobs.status, "OPEN"));
+
+    return res.json({ jobs: openJobs });
   } catch (err) {
     console.error(err)
     return res.status(500).json({ message: 'Server error' })
