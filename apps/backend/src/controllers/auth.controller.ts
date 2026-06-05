@@ -1,56 +1,60 @@
-const prisma = require('../lib/prisma');
-const bcrypt = require('bcryptjs');
-const generateToken = require('../utils/generateToken.ts');
+import { db } from '../db/index'
+import { users } from '../db/schema'
+import { eq } from 'drizzle-orm'
+import bcrypt from 'bcryptjs'
+import { generateToken } from '../utils/generateToken'
+import { Request, Response } from 'express'
 
-exports.register = async (req: any, res: any) => {
+export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password, role } = req.body
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const existing = await db.select().from(users).where(eq(users.email, email))
 
-    if (user) {
+    if (existing.length > 0) {
       return res.status(400).json({ message: 'Invalid email or password' })
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10)
 
-    const newUser = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-      },
-    });
+    const [newUser] = await db.insert(users).values({
+      email,
+      password: hashedPassword,
+      role,
+    }).returning()
 
-    const token = generateToken(newUser.id);
+    const token = generateToken(newUser!.id)
 
-    res.json({ token });
+    res.json({ token })
 
   } catch (err) {
-    console.error(err);
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
   }
 }
 
-exports.signIn = async (req: any, res: any) => {
+export const signIn = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const [user] = await db.select().from(users).where(eq(users.email, email))
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid email or password' })
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password!)
 
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid email or password' })
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken(user.id)
 
-    res.json({ token });
+    res.json({ token })
+
   } catch (err) {
-    console.error(err);
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
   }
 }

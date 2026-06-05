@@ -35,7 +35,6 @@
     // Recommended Options
     "strict": true,
     "ignoreDeprecations": "6.0",
-    "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
