@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use('/api/auth', authRouter)
 
-app.use('/api/developer', developerRouter)
+app.use('/api', developerRouter)
 
 app.use('/api/company', companyRouter)
 

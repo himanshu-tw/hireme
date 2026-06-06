@@ -6,10 +6,10 @@ import { authenticate, authorize } from '../middleware/middleware';
 
 const router = express.Router()
 
-router.get("/getDevProfile", authenticate, authorize("DEVELOPER"), getDevProfile)
-router.post("/createDevProfile", authenticate, authorize("DEVELOPER"), createDevProfile)
-router.get("/getOpenJobs", authenticate, authorize("DEVELOPER"), getOpenJobs)
-router.post("/applyToJob", authenticate, authorize("DEVELOPER"), applyToJob)
-router.get("/getMyApplications", authenticate, authorize("DEVELOPER"), getMyApplications)
+router.get("/developer/profile", authenticate, authorize("DEVELOPER"), getDevProfile)
+router.post("/developer/profile", authenticate, authorize("DEVELOPER"), createDevProfile)
+router.get("/jobs", authenticate, authorize("DEVELOPER"), getOpenJobs)
+router.post("/jobs/:jobId/apply", authenticate, authorize("DEVELOPER"), applyToJob)
+router.get("/applications", authenticate, authorize("DEVELOPER"), getMyApplications)
 
 export default router
