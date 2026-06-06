@@ -4,6 +4,7 @@ import cors from "cors";
 
 import authRouter from './routes/auth';
 import developerRouter from './routes/developer'
+import companyRouter from './routes/company'
 
 const app = express();
 app.use(cors());
@@ -14,6 +15,8 @@ const PORT = process.env.PORT || 5000;
 app.use('/api/auth', authRouter)
 
 app.use('/api/developer', developerRouter)
+
+app.use('/api/company', companyRouter)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
