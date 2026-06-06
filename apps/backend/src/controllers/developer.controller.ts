@@ -74,11 +74,13 @@ export const getOpenJobs = async (req: AuthRequest, res: Response) => {
 
 export const applyToJob = async (req: AuthRequest, res: Response) => {
   try {
-    const { jobId } = req.body;
+    const jobIdParam = req.params.jobId;
 
-    if (!jobId) {
+    if (!jobIdParam || Array.isArray(jobIdParam)) {
       return res.status(400).json({ message: "jobId is required" })
     }
+
+    const jobId = jobIdParam;
 
     const id = req.user?.id;
 
