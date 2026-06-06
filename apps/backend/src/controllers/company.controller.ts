@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { companyProfiles, jobs, applications } from "../db/schema";
+import { companyProfiles, jobs } from "../db/schema";
 import { Response } from "express";
 import { AuthRequest } from "../middleware/middleware";
 import { eq, and } from "drizzle-orm";
@@ -122,9 +122,16 @@ export const getCompanyJobs = async (req: AuthRequest, res: Response) => {
 
 export const updateJob = async (req: AuthRequest, res: Response) => {
     try {
-        const { jobId, title, description, skills, location, salary, status } = req.body;
+        const jobIdParam = req.params.jobId;
+        const { title, description, skills, location, salary, status } = req.body;
 
-        if (!jobId || !title || !description || !skills || !location || !salary || !status) {
+        if (!jobIdParam || Array.isArray(jobIdParam)) {
+            return res.status(400).json({ message: "jobId param is required" })
+        }
+
+        const jobId = jobIdParam;
+
+        if (!title || !description || !skills || !location || !salary || !status) {
             return res.status(400).json({ message: "All fields are required" })
         }
 
@@ -164,10 +171,17 @@ export const updateJob = async (req: AuthRequest, res: Response) => {
 
 export const updateJobStatus = async (req: AuthRequest, res: Response) => {
     try {
-        const { jobId, status } = req.body;
+        const jobIdParam = req.params.jobId;
+        const { status } = req.body;
 
-        if (!jobId || !status) {
-            return res.status(400).json({ message: "All fields are required" })
+        if (!jobIdParam || Array.isArray(jobIdParam)) {
+            return res.status(400).json({ message: "jobId param is required" })
+        }
+
+        const jobId = jobIdParam;
+
+        if (!status) {
+            return res.status(400).json({ message: "Status is required" })
         }
 
         const id = req.user?.id;

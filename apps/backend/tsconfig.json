@@ -34,7 +34,6 @@
 
     // Recommended Options
     "strict": true,
-    "ignoreDeprecations": "6.0",
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
