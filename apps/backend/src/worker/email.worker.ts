@@ -1,36 +1,27 @@
 // email worker
-import { Worker } from 'bullmq'
-import { emailQueue } from '../queues/email.queue'
+import { ConnectionOptions, Worker } from 'bullmq'
+import { redisConnection } from '../config/redis.config'
+import nodemailer from 'nodemailer'
 
-// Resolve the underlying redis client (emailQueue.client is a Promise<RedisClient>)
-const initializeWorker = async () => {
-  const redisClient = await emailQueue.client
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
+    }
+})
 
-  const emailWorker = new Worker(emailQueue.name, async job => {
-    const { to, subject, text } = job.data
+export const emailWorker = new Worker('email', async (job) => {
+    const { type, email, token } = job.data
 
-    // Simulate email sending (replace with actual email sending logic)
-    console.log(`Sending email to ${to} with subject "${subject}" and text "${text}"`)
-
-    // Simulate a delay for sending the email
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    console.log(`Email sent to ${to}`)
-  }, {
-    // use the resolved client (or its options) for the worker connection
-    connection: // prefer passing the client instance; fall back to client.options if available
-      (redisClient as any).options ?? redisClient,
-  })
-
-  emailWorker.on('completed', job => {
-    console.log(`Job ${job.id} completed successfully`)
-  })
-
-  emailWorker.on('failed', (job: any, err) => {
-    console.error(`Job ${job.id} failed with error:`, err)
-  })
-
-  return emailWorker
-}
-
-export default initializeWorker()
+    if (type === 'verification') {
+        await transporter.sendMail({
+            from: process.env.GMAIL_USER,
+            to: email,
+            subject: 'verify your email address',
+            html: `<a href="${process.env.FRONTEND_URL}/verify?token=${token}">Click here to verify</a>`
+        })
+    }
+}, {
+    connection: redisConnection as unknown as ConnectionOptions
+})
