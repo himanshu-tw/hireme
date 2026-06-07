@@ -25,6 +25,7 @@ export const register = async (req: Request, res: Response) => {
       role,
     }).returning()
 
+    // generate verification token and send verification email here (omitted for brevity)
     const token = generateToken(newUser!.id, newUser!.role)
 
     setAuthCookie(res, token)

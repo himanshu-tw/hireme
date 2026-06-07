@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, pgEnum } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, pgEnum, boolean } from 'drizzle-orm/pg-core'
 
 export const roleEnum = pgEnum('role', ['COMPANY', 'DEVELOPER'])
 export const jobStatusEnum = pgEnum('job_status', ['OPEN', 'CLOSED'])
@@ -9,6 +9,9 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   password: text('password'),
   role: roleEnum('role').notNull(),
+  isVerified: boolean('is_verified').notNull().default(false),
+  verificationToken: text('verification_token'),
+  verificationTokenExpiry: timestamp('verification_token_expiry'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
