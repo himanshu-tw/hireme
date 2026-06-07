@@ -18,8 +18,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import { api } from "@/lib/api"
 import { registerSchema, type RegisterSchema } from "@/lib/validations/auth"
+import { useState } from "react"
 
 export default function RegisterPage() {
+
+  const [success, setSuccess] = useState<boolean>(false)
+
   const router = useRouter()
 
   const {
@@ -40,11 +44,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterSchema) => {
     try {
       const res = await api.post<{ role: string }>("/api/auth/register", data)
-      if (res.data.role === "COMPANY") {
-        router.push("/dashboard/company")
-      } else {
-        router.push("/dashboard/developer")
-      }
+      setSuccess(true)
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.data?.message) {
         setError("root", { message: err.response.data.message })
@@ -52,6 +52,10 @@ export default function RegisterPage() {
         setError("root", { message: "Something went wrong. Please try again." })
       }
     }
+  }
+
+  if (success) {
+    return <p>Please check your email to verify your account.</p>
   }
 
   return (
