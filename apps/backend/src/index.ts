@@ -7,6 +7,8 @@ import authRouter from './routes/auth';
 import developerRouter from './routes/developer'
 import companyRouter from './routes/company'
 
+import './worker/email.worker';
+
 const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:3000";
 
