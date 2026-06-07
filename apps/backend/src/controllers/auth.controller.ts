@@ -7,6 +7,47 @@ import { setAuthCookie, clearAuthCookie } from '../utils/authCookie'
 import { Request, Response } from 'express'
 import { AuthRequest } from '../middleware/middleware'
 
+// bullmq
+import { emailQueue } from '../queues/email.queue'
+
+
+export async function verify(req: AuthRequest, res: Response) {
+  try {
+    const token = req.query.token as string
+
+    if (!token) {
+      return res.status(400).json({ message: "token not found" })
+    }
+
+    const [user] = await db.select().from(users).where(eq(users.verificationToken, token))
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid token" })
+    }
+
+    if (new Date() > user.verificationTokenExpiry!) {
+      return res.status(400).json({ message: "Token expired" })
+    }
+
+    const [updatedUser] = await db.update(users).set({
+      isVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+    }).where(eq(users.id, user.id)).returning();
+
+    // generate jwt
+    const jwtToken = generateToken(user.id, user.role)
+
+    // set cookie
+    setAuthCookie(res, jwtToken)
+
+    // role: user.role return
+    return res.status(200).json({ role: updatedUser?.role })
+  } catch (err) {
+    return res.status(500).json({ message: "server error" })
+  }
+}
+
 export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, role } = req.body
@@ -19,17 +60,20 @@ export const register = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    const verification_token = crypto.randomUUID()
+
     const [newUser] = await db.insert(users).values({
       email,
       password: hashedPassword,
       role,
+      isVerified: false,
+      verificationToken: verification_token,
+      verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000)
     }).returning()
 
-    // generate verification token and send verification email here (omitted for brevity)
-    const token = generateToken(newUser!.id, newUser!.role)
+    emailQueue.add('send-email', { type: 'verification', email, token: verification_token })
 
-    setAuthCookie(res, token)
-    res.json({ role: newUser!.role })
+    return res.status(200).json({ message: "check your email" })
 
   } catch (err) {
     console.error(err)
@@ -48,9 +92,14 @@ export const signIn = async (req: Request, res: Response) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password!)
+    const isVerifiedUser = user.isVerified;
 
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid email or password' })
+    }
+
+    if (!isVerifiedUser) {
+      return res.status(400).json({ message: "Please verify your email" })
     }
 
     const token = generateToken(user.id, user.role)
