@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useDeveloper, type DeveloperProfile } from "@/hooks/useDeveloper"
-import { logout } from "@/lib/auth"
+import { getSession, logout } from "@/lib/auth"
 
 function getInitials(name: string) {
   return name
@@ -37,13 +37,13 @@ export default function DeveloperProfilePage() {
   const [resumeUrl, setResumeUrl] = useState("")
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.replace("/sign-in")
-      return
-    }
-
     async function loadProfile() {
+      try {
+        await getSession()
+      } catch {
+        router.replace("/sign-in")
+        return
+      }
       setIsFetching(true)
       try {
         const data = await getProfile()
@@ -60,9 +60,12 @@ export default function DeveloperProfilePage() {
     loadProfile()
   }, [getProfile, router])
 
-  const handleLogout = () => {
-    logout()
-    router.replace("/sign-in")
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } finally {
+      router.replace("/sign-in")
+    }
   }
 
   const handleCreateProfile = async (e: React.FormEvent) => {

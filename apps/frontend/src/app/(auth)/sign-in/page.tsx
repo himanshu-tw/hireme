@@ -9,10 +9,8 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
+import { api } from "@/lib/api"
 import { signInSchema, type SignInSchema } from "@/lib/validations/auth"
-import { jwtDecode } from 'jwt-decode'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export default function SignInPage() {
   const router = useRouter()
@@ -32,10 +30,8 @@ export default function SignInPage() {
 
   const onSubmit = async (data: SignInSchema) => {
     try {
-      const res = await axios.post(`${API_URL}/api/auth/sign-in`, data)
-      localStorage.setItem("token", res.data.token)
-      const decoded = jwtDecode<{ role: string }>(res.data.token)
-      if (decoded.role === "COMPANY") {
+      const res = await api.post<{ role: string }>("/api/auth/sign-in", data)
+      if (res.data.role === "COMPANY") {
         router.push("/dashboard/company")
       } else {
         router.push("/dashboard/developer")

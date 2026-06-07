@@ -15,6 +15,7 @@ import {
   type Job,
 } from "@/hooks/useDeveloper"
 import { getApiErrorMessage } from "@/lib/api"
+import { getSession } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 function getInitials(name: string) {
@@ -64,13 +65,13 @@ export default function DeveloperDashboardPage() {
   )
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.replace("/sign-in")
-      return
-    }
-
     async function loadDashboard() {
+      try {
+        await getSession()
+      } catch {
+        router.replace("/sign-in")
+        return
+      }
       setIsLoading(true)
       setError(null)
 

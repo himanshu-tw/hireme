@@ -16,10 +16,8 @@ import Link from "next/link"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
+import { api } from "@/lib/api"
 import { registerSchema, type RegisterSchema } from "@/lib/validations/auth"
-import { jwtDecode } from 'jwt-decode'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -41,10 +39,8 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterSchema) => {
     try {
-      const res = await axios.post(`${API_URL}/api/auth/register`, data)
-      localStorage.setItem("token", res.data.token)
-      const decoded = jwtDecode<{ role: string }>(res.data.token)
-      if (decoded.role === "COMPANY") {
+      const res = await api.post<{ role: string }>("/api/auth/register", data)
+      if (res.data.role === "COMPANY") {
         router.push("/dashboard/company")
       } else {
         router.push("/dashboard/developer")

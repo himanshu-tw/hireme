@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { useCompany, type CompanyProfile, type Job } from "@/hooks/useCompany"
 import { getApiErrorMessage } from "@/lib/api"
+import { getSession } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 function getInitials(name: string) {
@@ -39,13 +40,13 @@ export default function CompanyDashboardPage() {
   const [updatingJobId, setUpdatingJobId] = useState<string | null>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.replace("/sign-in")
-      return
-    }
-
     async function loadDashboard() {
+      try {
+        await getSession()
+      } catch {
+        router.replace("/sign-in")
+        return
+      }
       setIsLoading(true)
       setError(null)
 

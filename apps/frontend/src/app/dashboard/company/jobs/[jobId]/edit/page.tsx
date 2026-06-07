@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useCompany, type Job } from "@/hooks/useCompany"
+import { getSession } from "@/lib/auth"
 
 export default function EditJobPage() {
   const router = useRouter()
@@ -35,13 +36,13 @@ export default function EditJobPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.replace("/sign-in")
-      return
-    }
-
     async function loadJob() {
+      try {
+        await getSession()
+      } catch {
+        router.replace("/sign-in")
+        return
+      }
       setIsFetching(true)
       try {
         const jobs = await getJobs()

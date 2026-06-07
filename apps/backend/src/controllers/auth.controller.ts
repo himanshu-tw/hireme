@@ -3,7 +3,9 @@ import { users } from '../db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { generateToken } from '../utils/generateToken'
+import { setAuthCookie, clearAuthCookie } from '../utils/authCookie'
 import { Request, Response } from 'express'
+import { AuthRequest } from '../middleware/middleware'
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -25,7 +27,8 @@ export const register = async (req: Request, res: Response) => {
 
     const token = generateToken(newUser!.id, newUser!.role)
 
-    res.json({ token })
+    setAuthCookie(res, token)
+    res.json({ role: newUser!.role })
 
   } catch (err) {
     console.error(err)
@@ -51,10 +54,24 @@ export const signIn = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, user.role)
 
-    res.json({ token })
+    setAuthCookie(res, token)
+    res.json({ role: user.role })
 
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Server error' })
   }
+}
+
+export const me = async (req: AuthRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Unauthorized' })
+  }
+
+  res.json({ id: req.user.id, role: req.user.role })
+}
+
+export const logout = async (_req: Request, res: Response) => {
+  clearAuthCookie(res)
+  res.json({ message: 'Logged out' })
 }

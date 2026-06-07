@@ -1,15 +1,18 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
+import { AUTH_COOKIE_NAME } from '../utils/authCookie'
 
 export interface AuthRequest extends Request {
   user?: { id: string, role: string }
 }
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '')
+    const token =
+      req.cookies?.[AUTH_COOKIE_NAME] ||
+      req.header('Authorization')?.replace('Bearer ', '')
 
     if (!token) {
-        return res.status(400).json({ message: 'Unauthorized' })
+        return res.status(401).json({ message: 'Unauthorized' })
     }
 
     try {
@@ -17,7 +20,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
         req.user = decoded as { id: string, role: string }
         next()
     } catch (error) {
-        return res.status(400).json({ message: 'Invalid token' })
+        return res.status(401).json({ message: 'Invalid token' })
     }
 }
 

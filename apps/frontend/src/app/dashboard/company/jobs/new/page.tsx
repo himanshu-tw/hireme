@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useCompany, type Job } from "@/hooks/useCompany"
+import { getSession } from "@/lib/auth"
 
 export default function CreateJobPage() {
   const router = useRouter()
@@ -31,10 +32,7 @@ export default function CreateJobPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.replace("/sign-in")
-    }
+    getSession().catch(() => router.replace("/sign-in"))
   }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
