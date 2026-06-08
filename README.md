@@ -1,159 +1,171 @@
-# Turborepo starter
+# HireMe
+This is an application where users can register as company or developer and then companies can post job openings and developers can apply to them.
 
-This Turborepo starter is maintained by the Turborepo core team.
+## Tech Stack
+For the management I have used turborepo and the JavaScript runtime used is bun
+To initialize a turborepo project - 
+```bash
+bun create-turbo@latest <project name>
+```
+### Frontend -
+In frontend I have used Nextjs with app router and shadcn ui for the ui library with tailwindcss
+To set up a nextjs project with shadcn ui using bun you can use the following command -
+```bash
+# Nextjs project
+bun create next-app <project name>
 
-## Using this example
+# shadcn
+cd <project name>
+bunx --bun shadcn@latest init --preset <preset code>
+```
+### Backend
+In backend I have used nodejs and express as the backend framework, and I have used bullmq and redis with nodemailer for sending the verification emails during register.
+I have made a REST APi with a controller-router pattern.
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
+## Project Structure
+```
+hireme
+├── apps
+│   ├── backend
+│   │   ├── drizzle
+│   │   │   ├── 0000_complete_garia.sql
+│   │   │   └── meta
+│   │   ├── drizzle.config.ts
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── config
+│   │   │   ├── controllers
+│   │   │   ├── db
+│   │   │   ├── index.ts
+│   │   │   ├── lib
+│   │   │   ├── middleware
+│   │   │   ├── queues
+│   │   │   ├── routes
+│   │   │   ├── utils
+│   │   │   └── worker
+│   │   └── tsconfig.json
+│   └── frontend
+│       ├── AGENTS.md
+│       ├── CLAUDE.md
+│       ├── components.json
+│       ├── eslint.config.mjs
+│       ├── next.config.ts
+│       ├── next-env.d.ts
+│       ├── package.json
+│       ├── postcss.config.mjs
+│       ├── public
+│       │   ├── file.svg
+│       │   ├── globe.svg
+│       │   ├── next.svg
+│       │   ├── vercel.svg
+│       │   └── window.svg
+│       ├── README.md
+│       ├── src
+│       │   ├── app
+│       │   ├── components
+│       │   ├── hooks
+│       │   └── lib
+│       ├── tsconfig.json
+│       └── tsconfig.tsbuildinfo
+├── bun.lock
+├── docker-compose.yml
+├── package.json
+├── package-lock.json
+├── packages
+│   ├── eslint-config
+│   │   ├── base.js
+│   │   ├── next.js
+│   │   ├── package.json
+│   │   ├── react-internal.js
+│   │   └── README.md
+│   ├── typescript-config
+│   │   ├── base.json
+│   │   ├── nextjs.json
+│   │   ├── package.json
+│   │   └── react-library.json
+│   └── ui
+│       ├── eslint.config.mjs
+│       ├── package.json
+│       ├── src
+│       │   ├── button.tsx
+│       │   ├── card.tsx
+│       │   └── code.tsx
+│       └── tsconfig.json
+├── README.md
+└── turbo.json
 ```
 
-## What's inside?
+## Getting Started
 
-This Turborepo includes the following packages/apps:
+### Prerequisites
+- Bun v1.3.14
+- Redis (for ubuntu)
+```bash
+sudo apt install redis && sudo systemctl start redis
+```
+- PostgreSQL using NeonDB
 
-### Apps and Packages
+### Setup
+1. Clone the repo
+```bash
+git clone https://github.com/himanshu-tw/hireme.git
+cd hireme
+```
+2. Install the dependencies
+```bash
+bun install
+```
+3. Setup environment variables
+    - Copy `apps/backend/.env.example` to `apps/backend/.env` and fill in the values
+    - Copy `apps/frontend/.env.example` to `apps/frontend/.env` and fill in the values
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+4. Run database migrations
+```bash
+cd apps/backend
+bunx drizzle-kit generate
+bunx drizzle-kit migrate
 ```
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-npm dlx turbo build
-npm exec turbo build
+5. Start the dev server
+```bash
+cd ../.. # to the root (hireme)
+bun run dev # this will start both the frontend and the backend
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Environment Variables
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+### Backend
+See `apps/backend/.env.example` — all variables are documented with instructions.
 
-```sh
-turbo build --filter=docs
-```
+### Frontend
+`NEXT_PUBLIC_API_URL` — backend URL (default: `http://localhost:8080`)
 
-Without global `turbo`:
+## API Endpoints
 
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
-```
+### Auth
+| Method | Endpoint                  | Description       | Auth Required |
+|--------|---------------------------|-------------------|---------------|
+| POST   | `/api/auth/register`      | Register new user | No            |
+| POST   | `/api/auth/sign-in`       | Sign in           | No            |
+| GET    | `/api/auth/verify?token=` | Verify email      | No            |
+| GET    | `/api/auth/me`            | Get current user  | Yes           |
+| POST   | `/api/auth/logout`        | Logout            | Yes           |
 
-### Develop
+### Company
+| Method | Endpoint                         | Description           | Auth Required |
+|--------|----------------------------------|-----------------------|---------------|
+| GET    | `/api/company/profile`           | Get company profile   | Yes           |
+| POST   | `/api/company/profile`           | Create new profile    | Yes           |
+| POST   | `/api/company/jobs`              | Create new job        | Yes           |
+| GET    | `/api/company/jobs`              | Get all jobs          | Yes           |
+| PUT    | `/api/company/jobs/:jobId`       | Update job            | Yes           |
+| PATCH  | `/api/company/job/:jobId/status` | Update the job status | Yes           |
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+### Developer
+| Method | Endpoint                         | Description              | Auth Required |
+|--------|----------------------------------|--------------------------|---------------|
+| GET    | `/api/developer/profile`         | Get developer profile    | Yes           |
+| POST   | `/api/developer/profile`         | Create developer profile | Yes           |
+| GET    | `/api/jobs`                      | Get open jobs            | Yes           |
+| POST   | `/api/jobs/:jobId/apply`         | Apply to jobs            | Yes           |
+| GET    | `/api/applications`              | Get applications         | Yes           |
