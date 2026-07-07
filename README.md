@@ -134,13 +134,13 @@ For checking if redis is setup correctly or not -
 redis-cli ping
 ```
 
+and this command should output 'PONG'
+
 You can also check using this command if it is running or not
 
 ```bash
 sudo systemctl status redis.service
 ```
-
-and this command should output 'PONG'
 
 - PostgreSQL using NeonDB
 
