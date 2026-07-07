@@ -113,19 +113,31 @@ hireme
   - for debian based distributions
 
 ```bash
-sudo apt install redis && sudo systemctl start redis
+sudo apt install redis -y && sudo systemctl enable --now redis
 ```
 
 - for RHEL or fedora based distributions
 
 ```bash
-sudo dnf install redis && sudo systemctl start redis
+sudo dnf install redis -y && sudo systemctl enable --now redis
+```
+
+- for Arch based distributions
+
+```bash
+sudo pacman -S redis --no-confirm && sudo systemctl enable --now redis.service
 ```
 
 For checking if redis is setup correctly or not -
 
 ```bash
 redis-cli ping
+```
+
+You can also check using this command if it is running or not
+
+```bash
+sudo systemctl status redis.service
 ```
 
 and this command should output 'PONG'
