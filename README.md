@@ -112,21 +112,21 @@ hireme
 - Redis (for linux distributions)
   - for debian based distributions
 
-```bash
-sudo apt install redis -y && sudo systemctl enable --now redis
-```
+  ```bash
+  sudo apt install redis -y && sudo systemctl enable --now redis
+  ```
 
-- for RHEL or fedora based distributions
+  - for RHEL or fedora based distributions
 
-```bash
-sudo dnf install redis -y && sudo systemctl enable --now redis
-```
+  ```bash
+  sudo dnf install redis -y && sudo systemctl enable --now redis
+  ```
 
-- for Arch based distributions
+  - for Arch based distributions
 
-```bash
-sudo pacman -S redis --no-confirm && sudo systemctl enable --now redis.service
-```
+  ```bash
+  sudo pacman -S redis --no-confirm && sudo systemctl enable --now redis.service
+  ```
 
 For checking if redis is setup correctly or not -
 
